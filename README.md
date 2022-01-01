@@ -2,7 +2,7 @@
 💫 Used for the main program window, with support for framelessness, acrylic and other features! 💫
 
 The new window gives support for:
-* Support the ability to deploy and select (as in Windows 11) (TODO)
+* Support for Windows 11 "Snap Layout" to the custom title bar (TODO)
 * Support Acrylic, Mica and other Windows style (TODO)
 * Support Windows, X11, Wayland and macOS.
 * Frameless but have frame shadow.
