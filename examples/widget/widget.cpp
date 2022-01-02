@@ -46,12 +46,11 @@ Widget::Widget(QWidget *parent) : QWidget(parent)
 {
     setAutoFillBackground(false);
     setAttribute(Qt::WA_NoSystemBackground);
-    //setAttribute(Qt::WA_DontCreateNativeAncestors);
+    setAttribute(Qt::WA_DontCreateNativeAncestors);
     createWinId();
     setupUi();
-    //m_globalWidget->setTintOpacity(4);
-    //m_titleBarWidget->setTintColor(QColor(qRgba(243, 243, 243, 255)));
-    //m_globalWidget->setTintColor(QColor(qRgba(255, 255, 255, 128)));
+    m_globalWidget->setTintOpacity(-1);
+    m_titleBarWidget->setTintOpacity(-1);
     startTimer(500);
 }
 
