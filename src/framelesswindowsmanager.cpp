@@ -28,7 +28,7 @@ void FramelessWindowsManager::addWindow(QWindow *window)
         return;
     }
     if (!QCoreApplication::testAttribute(Qt::AA_DontCreateNativeWidgetSiblings)) {
-        //QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
+        QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
     }
 #ifdef FRAMELESSHELPER_USE_UNIX_VERSION
     framelessHelperUnix()->removeWindowFrame(window);
