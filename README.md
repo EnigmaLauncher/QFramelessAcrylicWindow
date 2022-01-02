@@ -3,10 +3,11 @@
 
 The new window gives support for:
 * Support for Windows 11 "Snap Layout" to the custom title bar (TODO)
-* Support Acrylic, Mica and other Windows style (TODO)
+* Support Acrylic, Mica and other Windows style (TODO) (Win32 only)
 * Support Windows, X11, Wayland and macOS.
 * Frameless but have frame shadow.
 * Draggable and resizable.
+* Rounding the edges of the window. (Native support in Windows 11, TODO in Linux, macOS, Windows 10 && 7)
 * Automatically high DPI scaling.
 * Multi-monitor support (different resolution and DPI).
 * Have animations when minimizing, maximizing and restoring.
