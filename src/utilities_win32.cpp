@@ -224,6 +224,36 @@ int Utilities::getSystemMetric(const QWindow *window, const SystemMetric metric,
     return 0;
 }
 
+    typedef enum {
+        DWMWA_NCRENDERING_ENABLED,
+        DWMWA_NCRENDERING_POLICY,
+        DWMWA_TRANSITIONS_FORCEDISABLED,
+        DWMWA_ALLOW_NCPAINT,
+        DWMWA_CAPTION_BUTTON_BOUNDS,
+        DWMWA_NONCLIENT_RTL_LAYOUT,
+        DWMWA_FORCE_ICONIC_REPRESENTATION,
+        DWMWA_FLIP3D_POLICY,
+        DWMWA_EXTENDED_FRAME_BOUNDS,
+        DWMWA_HAS_ICONIC_BITMAP,
+        DWMWA_DISALLOW_PEEK,
+        DWMWA_EXCLUDED_FROM_PEEK,
+        DWMWA_CLOAK,
+        DWMWA_CLOAKED,
+        DWMWA_FREEZE_REPRESENTATION,
+        DWMWA_PASSIVE_UPDATE_MODE,
+        DWMWA_USE_HOSTBACKDROPBRUSH,
+        DWMWA_USE_IMMERSIVE_DARK_MODE,
+        DWMWA_WINDOW_CORNER_PREFERENCE,
+        DWMWA_BORDER_COLOR,
+        DWMWA_CAPTION_COLOR,
+        DWMWA_TEXT_COLOR,
+        DWMWA_VISIBLE_FRAME_BORDER_THICKNESS,
+        DWMWA_SYSTEMBACKDROP_TYPE = 38, // Windows 11 Build 22523+
+        DWMWA_MICA_EFFECT = 1029,
+        DWMWA_LAST
+
+    } DWMWINDOWATTRIBUTE;
+
 void Utilities::triggerFrameChange(const WId winId)
 {
     Q_ASSERT(winId);
@@ -249,71 +279,11 @@ void Utilities::updateFrameMargins(const WId winId, const bool reset)
         return;
     }
     const auto hwnd = reinterpret_cast<HWND>(winId);
-
-    typedef enum {
-      DWMWCP_DEFAULT,
-      DWMWCP_DONOTROUND,
-      DWMWCP_ROUND,
-      DWMWCP_ROUNDSMALL
-    } DWM_WINDOW_CORNER_PREFERENCE;
-
-    enum DWMWINDOWATTRIBUTE {
-      DWMWA_NCRENDERING_ENABLED,
-      DWMWA_NCRENDERING_POLICY,
-      DWMWA_TRANSITIONS_FORCEDISABLED,
-      DWMWA_ALLOW_NCPAINT,
-      DWMWA_CAPTION_BUTTON_BOUNDS,
-      DWMWA_NONCLIENT_RTL_LAYOUT,
-      DWMWA_FORCE_ICONIC_REPRESENTATION,
-      DWMWA_FLIP3D_POLICY,
-      DWMWA_EXTENDED_FRAME_BOUNDS,
-      DWMWA_HAS_ICONIC_BITMAP,
-      DWMWA_DISALLOW_PEEK,
-      DWMWA_EXCLUDED_FROM_PEEK,
-      DWMWA_CLOAK,
-      DWMWA_CLOAKED,
-      DWMWA_FREEZE_REPRESENTATION,
-      DWMWA_PASSIVE_UPDATE_MODE,
-      DWMWA_USE_HOSTBACKDROPBRUSH,
-      DWMWA_USE_IMMERSIVE_DARK_MODE,
-      DWMWA_WINDOW_CORNER_PREFERENCE,
-      DWMWA_BORDER_COLOR,
-      DWMWA_CAPTION_COLOR,
-      DWMWA_TEXT_COLOR,
-      DWMWA_VISIBLE_FRAME_BORDER_THICKNESS,
-      DWMWA_LAST
-    };
-
-    DWM_WINDOW_CORNER_PREFERENCE preference = DWMWCP_ROUND;
-    BOOL enable = TRUE;
-    // A temporary crutch with Acrylic support.
     // TODO: Get rid of one pixel from the top, which is now available.
-    int32_t effect = 4; // Acrylic effect
     const MARGINS margins = reset ? MARGINS{0, 0, 1, 0} : MARGINS{1, 1, 1, 1};
     HRESULT hr = DwmExtendFrameIntoClientArea(hwnd, &margins);
     if (FAILED(hr)) {
         qWarning() << __getSystemErrorMessage(QStringLiteral("DwmExtendFrameIntoClientArea"), hr);
-    }
-    hr = DwmSetWindowAttribute(hwnd, DWMWA_USE_HOSTBACKDROPBRUSH, &enable, sizeof(enable));
-    if (FAILED(hr)) {
-        qWarning() << __getSystemErrorMessage(QStringLiteral("DwmSetWindowAttribute_DWMWA_USE_HOSTBACKDROPBRUSH"), hr);
-    }
-    hr = DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &preference, sizeof(preference));
-    if (FAILED(hr)) {
-        qWarning() << __getSystemErrorMessage(QStringLiteral("DwmSetWindowAttribute_DWMWA_WINDOW_CORNER_PREFERENCE"), hr);
-    }
-    hr = DwmSetWindowAttribute(hwnd, 20, &enable,sizeof(enable));
-    if (FAILED(hr)) {
-        qWarning() << __getSystemErrorMessage(QStringLiteral("DwmSetWindowAttribute_20"), hr);
-    }
-    hr = DwmSetWindowAttribute(hwnd, 1029, &enable, sizeof(enable));
-    if (FAILED(hr)) {
-        qWarning() << __getSystemErrorMessage(QStringLiteral("DwmSetWindowAttribute_1029"), hr);
-    }
-    INT effect_value = effect == 4 ? 3 : effect == 5 ? 2 : 4;
-    hr = DwmSetWindowAttribute(hwnd, 38, &effect_value, sizeof(enable));
-    if (FAILED(hr)) {
-        qWarning() << __getSystemErrorMessage(QStringLiteral("DwmSetWindowAttribute_38"), hr);
     }
 }
 

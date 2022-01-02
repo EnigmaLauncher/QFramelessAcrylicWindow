@@ -84,6 +84,55 @@ using ACCENT_POLICY = struct _ACCENT_POLICY
     DWORD AnimationId;
 };
 
+
+typedef enum {
+    DWMWCP_DEFAULT,
+    DWMWCP_DONOTROUND,
+    DWMWCP_ROUND,
+    DWMWCP_ROUNDSMALL
+} DWM_WINDOW_CORNER_PREFERENCE;
+
+
+//    typedef enum {
+//        DWMWA_NCRENDERING_ENABLED,
+//        DWMWA_NCRENDERING_POLICY,
+//        DWMWA_TRANSITIONS_FORCEDISABLED,
+//        DWMWA_ALLOW_NCPAINT,
+//        DWMWA_CAPTION_BUTTON_BOUNDS,
+//        DWMWA_NONCLIENT_RTL_LAYOUT,
+//        DWMWA_FORCE_ICONIC_REPRESENTATION,
+//        DWMWA_FLIP3D_POLICY,
+//        DWMWA_EXTENDED_FRAME_BOUNDS,
+//        DWMWA_HAS_ICONIC_BITMAP,
+//        DWMWA_DISALLOW_PEEK,
+//        DWMWA_EXCLUDED_FROM_PEEK,
+//        DWMWA_CLOAK,
+//        DWMWA_CLOAKED,
+//        DWMWA_FREEZE_REPRESENTATION,
+//        DWMWA_PASSIVE_UPDATE_MODE,
+//        DWMWA_USE_HOSTBACKDROPBRUSH,
+//        DWMWA_USE_IMMERSIVE_DARK_MODE,
+//        DWMWA_WINDOW_CORNER_PREFERENCE,
+//        DWMWA_BORDER_COLOR,
+//        DWMWA_CAPTION_COLOR,
+//        DWMWA_TEXT_COLOR,
+//        DWMWA_VISIBLE_FRAME_BORDER_THICKNESS,
+//        DWMWA_SYSTEMBACKDROP_TYPE = 38, // Windows 11 Build 22523+
+//        DWMWA_MICA_EFFECT = 1029,
+//        DWMWA_LAST
+
+//    } DWMWINDOWATTRIBUTE;
+
+
+enum DWM_STYLE
+{
+    DWMSBT_AUTO = 0,
+    DWMSBT_DISABLE = 1,         // None
+    DWMSBT_MAINWINDOW = 2,      // Mica
+    DWMSBT_TRANSIENTWINDOW = 3, // Acrylic
+    DWMSBT_TABBEDWINDOW = 4     // Tabbed
+};
+
 static const QString g_dwmRegistryKey = QStringLiteral(R"(HKEY_CURRENT_USER\Software\Microsoft\Windows\DWM)");
 static const QString g_personalizeRegistryKey = QStringLiteral(R"(HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize)");
 static const QString g_desktopRegistryKey = QStringLiteral(R"(HKEY_CURRENT_USER\Control Panel\Desktop)");
@@ -116,8 +165,23 @@ using Win32Data = struct _QAH_UTILITIES_WIN32_DATA
 
 Q_GLOBAL_STATIC(Win32Data, win32Data)
 
+[[nodiscard]] static inline QString __getSystemErrorMessage(const QString &function, const HRESULT hr)
+{
+    Q_ASSERT(!function.isEmpty());
+    if (function.isEmpty()) {
+        return {};
+    }
+    if (SUCCEEDED(hr)) {
+        return {};
+    }
+    const DWORD dwError = HRESULT_CODE(hr);
+    return __getSystemErrorMessage(function, dwError);
+}
+
 bool _qam::Utilities::setBlurEffectEnabled(const QWindow *window, const bool enabled, const QColor &gradientColor)
 {
+
+
     Q_ASSERT(window);
     if (!window) {
         return false;
@@ -127,6 +191,7 @@ bool _qam::Utilities::setBlurEffectEnabled(const QWindow *window, const bool ena
     if (!hwnd) {
         return false;
     }
+
     bool result = false;
     // We prefer DwmEnableBlurBehindWindow on Windows 7.
     if (isWin8OrGreater() && win32Data()->SetWindowCompositionAttributePFN) {
@@ -137,6 +202,33 @@ bool _qam::Utilities::setBlurEffectEnabled(const QWindow *window, const bool ena
         wcaData.Attrib = WCA_ACCENT_POLICY;
         wcaData.pvData = &accentPolicy;
         wcaData.cbData = sizeof(accentPolicy);
+
+        DWM_WINDOW_CORNER_PREFERENCE preference = DWMWCP_ROUND;
+        BOOL enable = TRUE;
+        HRESULT hr = S_OK;
+
+        hr = DwmSetWindowAttribute(hwnd, 16, &enable, sizeof(enable)); // DWMWA_USE_HOSTBACKDROPBRUSH
+        if (FAILED(hr)) {
+            qWarning() << __getSystemErrorMessage(QStringLiteral("DwmSetWindowAttribute_16"), hr);
+        }
+
+        hr = DwmSetWindowAttribute(hwnd, 18, &preference, sizeof(preference)); // DWMWA_WINDOW_CORNER_PREFERENCE
+        if (FAILED(hr)) {
+            qWarning() << __getSystemErrorMessage(QStringLiteral("DwmSetWindowAttribute_18"), hr);
+        }
+
+        hr = DwmSetWindowAttribute(hwnd, 20, &enable,sizeof(enable)); // DWMWA_CAPTION_COLOR
+        if (FAILED(hr)) {
+            qWarning() << __getSystemErrorMessage(QStringLiteral("DwmSetWindowAttribute_20"), hr);
+        }
+
+        // FIX: Use the public API for Windows versions 11 (build: 22523) and up
+        DWM_STYLE effect_value = DWMSBT_TRANSIENTWINDOW; // Acrylic Effect int(3) value.
+        hr = DwmSetWindowAttribute(hwnd, 38, &effect_value, sizeof(enable)); // DWMWA_SYSTEMBACKDROP_TYPE (Windows 11 Build 22523+)
+        if (FAILED(hr)) {
+            qWarning() << __getSystemErrorMessage(QStringLiteral("DwmSetWindowAttribute_38"), hr);
+        }
+
         if (enabled) {
             // The gradient color must be set otherwise it'll look like a classic blur.
             // Use semi-transparent gradient color to get better appearance.
@@ -478,6 +570,16 @@ bool _qam::Utilities::isWin10OrGreater(const int subVer)
 #else
     Q_UNUSED(ver);
     return QSysInfo::WindowsVersion >= QSysInfo::WV_WINDOWS10;
+#endif
+}
+
+bool _qam::Utilities::isWin11OrGreater(const int subVer)
+{
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 9, 0))
+    return QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 11, 0, subVer);
+#else
+    Q_UNUSED(ver);
+    return QSysInfo::WindowsVersion >= QSysInfo::WV_WINDOWS11;
 #endif
 }
 

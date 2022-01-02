@@ -69,6 +69,7 @@ QTACRYLICHELPER_API bool forceDisableWallpaperBlur();
 QTACRYLICHELPER_API bool isWin8OrGreater();
 QTACRYLICHELPER_API bool isWin10OrGreater();
 QTACRYLICHELPER_API bool isWin10OrGreater(const int subVer);
+QTACRYLICHELPER_API bool isWin11OrGreater(const int subVer);
 
 QTACRYLICHELPER_API bool isOfficialMSWin10AcrylicBlurAvailable();
 
