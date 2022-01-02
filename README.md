@@ -3,7 +3,7 @@
 
 The new window gives support for:
 * Support for Windows 11 "Snap Layout" to the custom title bar (TODO)
-* Support Acrylic, Mica and other Windows style (TODO) (Win32 only)
+* Support Acrylic, Mica and other style (TODO)
 * Support Windows, X11, Wayland and macOS.
 * Frameless but have frame shadow.
 * Draggable and resizable.
