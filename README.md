@@ -1,3 +1,5 @@
+> **The project is archived. All work is done in the main repository.**
+
 # QFramelessAcrylicWindow
 💫 Used for the main program window, with support for framelessness, acrylic and other features! 💫
 
